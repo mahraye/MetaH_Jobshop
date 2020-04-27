@@ -29,6 +29,11 @@ public class GloutonESTLRPT implements Solver {
             Task t = new Task(job,0);
             HashTasksRealisable.add(t);
         }
+        for(int j = 0 ; j < instance.numJobs ; j++) {
+            for(int t = 0 ; t < instance.numTasks ; t++) {
+                JobDuration[j] += instance.duration(j,t);
+            }
+        }
 
         while(!HashTasksRealisable.isEmpty()){
             HashTasksMinimal.clear();

@@ -18,6 +18,7 @@ public class DebuggingMain {
             // Note : cette solution a aussi été vue dans les exercices (section 3.3)
             //        mais on commençait à compter à 1 ce qui donnait [1 2 2 1 1 2]
             JobNumbers enc = new JobNumbers(instance);
+            ResourceOrder rso = new ResourceOrder(instance);
 
 
             enc.jobs[enc.nextToSet++] = 0;

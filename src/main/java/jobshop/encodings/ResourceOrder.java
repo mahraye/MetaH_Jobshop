@@ -77,10 +77,10 @@ public class ResourceOrder extends Encoding {
             // if there is no such task, we have cyclic dependency and the solution is invalid
             Optional<Task> schedulable =
                     IntStream.range(0, instance.numMachines) // all machines ...
-                    .filter(m -> nextToScheduleByMachine[m] < instance.numJobs) // ... with unscheduled jobs
-                    .mapToObj(m -> this.tasksByMachine[m][nextToScheduleByMachine[m]]) // tasks that are next to schedule on a machine ...
-                    .filter(task -> task.task == nextToScheduleByJob[task.job])  // ... and on their job
-                    .findFirst(); // select the first one if any
+                            .filter(m -> nextToScheduleByMachine[m] < instance.numJobs) // ... with unscheduled jobs
+                            .mapToObj(m -> this.tasksByMachine[m][nextToScheduleByMachine[m]]) // tasks that are next to schedule on a machine ...
+                            .filter(task -> task.task == nextToScheduleByJob[task.job])  // ... and on their job
+                            .findFirst(); // select the first one if any
 
             if(schedulable.isPresent()) {
                 // we found a schedulable task, lets call it t
@@ -129,7 +129,6 @@ public class ResourceOrder extends Encoding {
     }
     public void addTask(int ressource, int job, int task) {
         Task temp_task = new Task(job, task);
-        tasksByMachine[ressource][nextFreeSlot[ressource]++] = temp_task;
-    }
+        tasksByMachine[ressource][nextFreeSlot[ressource]++] = temp_task; }
 
 }

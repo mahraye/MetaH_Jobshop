@@ -28,6 +28,7 @@ public class Main {
         solvers.put("random", new RandomSolver());
         solvers.put("estSPT", new GloutonESTSPT());
         solvers.put("estLRPT", new GloutonESTLRPT());
+        solvers.put("dsct", new DescentSolver());
         // add new solvers here
     }
 
