@@ -29,6 +29,7 @@ public class Main {
         solvers.put("estSPT", new GloutonESTSPT());
         solvers.put("estLRPT", new GloutonESTLRPT());
         solvers.put("dsct", new DescentSolver());
+        solvers.put("tabou", new Tabou());
         // add new solvers here
     }
 

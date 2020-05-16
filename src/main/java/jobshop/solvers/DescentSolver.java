@@ -79,27 +79,37 @@ public class DescentSolver implements Solver {
 
     @Override
     public Result solve(Instance instance, long deadline) {
+        // Solution initiale qui part de glouton LRPT
         GloutonESTLRPT glouton = new GloutonESTLRPT();
         Result s = glouton.solve(instance,deadline);
         int best = s.schedule.makespan();
+        //tant que la deadline n'est pas atteinte
         while (deadline - System.currentTimeMillis() > 1) {
-            boolean exit = true;
+            // boolean permettant de savoir si une meilleur solution est trouvé (par default non trouvé)
+            boolean Notfound = true;
+            //init du meilleur rodrder actuel
             ResourceOrder order = new ResourceOrder(s.schedule);
-            List<Block> blocksList = blocksOfCriticalPath(order);
-            for (Block block : blocksList) {
+            //instancier des blocks
+            List<Block> blocks = blocksOfCriticalPath(order);
+            //parcours des blocks et des swaps
+            for (Block block : blocks) {
                 List<Swap> swapList = neighbors(block);
                 for (Swap swap : swapList) {
+                    // on applique les swap
                     ResourceOrder copy = order.copy();
                     swap.applyOn(copy);
-                    int makespan = copy.toSchedule().makespan();
-                    if (makespan < best) {
-                        if (exit) exit = false;
+                    //calcul du new makespan après application des swap
+                    int newM = copy.toSchedule().makespan();
+                    //Si le nouveau makespan (après application du swap) est meilleur, actualisation de la solution initiale
+                    if (newM < best) {
+                        if (Notfound) Notfound = false;
                         order = copy;
-                        best = makespan;
+                        best = newM;
                     }
                 }
             }
-            if (!exit) s = new Result(order.instance, order.toSchedule(), Result.ExitCause.Blocked);
+            //Si on toujours pas trouvé de meilleur solution alors on rend la solution initiale
+            if (!Notfound) s = new Result(order.instance, order.toSchedule(), Result.ExitCause.Blocked);
             else return s;
         }
         return new Result(s.instance, s.schedule, Result.ExitCause.Timeout);

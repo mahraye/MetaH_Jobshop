@@ -81,41 +81,43 @@ public class Tabou implements Solver {
     public Result solve(Instance instance, long deadline) {
         GloutonESTLRPT glouton = new GloutonESTLRPT();
         Result s = glouton.solve(instance,deadline);
-        //on s_local = meilleur solution pour l'itération
-        Result s_local = s;
+        //s_iteration = meilleur solution pour l'itération
+        Result s_iteration = s;
         int best = s.schedule.makespan();
-        int ListeTaboo [][] = new int[instance.numJobs*instance.numMachines][instance.numJobs*instance.numMachines];
+        //Liste des éléments non autorisé ( déjà visité)
+        int List_Taboo [][] = new int[instance.numJobs*instance.numMachines][instance.numJobs*instance.numMachines];
         //k permet de compter les itérations
-        int k = 0;
+        int i = 0;
         int maxIter=100;
         int dureeTabou=10;
         //tant que le nombre d'itération max n'est pas atteinte et que la deadline n'est pas atteinte
-        while (k < maxIter && deadline - System.currentTimeMillis() > 1) {
-            k++;
+        while (i< maxIter && deadline - System.currentTimeMillis() > 1) {
+            i++;
             //l'order qui correspond au meilleur schedule (s)
             ResourceOrder order = new ResourceOrder(s.schedule);
             //l'order qui correspond au meilleur schedule de l'itération (s_local)
-            ResourceOrder order_local = new ResourceOrder(s_local.schedule);
+            ResourceOrder order_iteration = new ResourceOrder(s_iteration.schedule);
             //la liste des Block du chemin critique
-            List<Block> blocksList = blocksOfCriticalPath(order_local);
+            List<Block> blocksList = blocksOfCriticalPath(order_iteration);
             //variables pour stocker les meilleurs résultats locaux
             Swap bestSwap = null;
-            int best_local = -1;
+            int best_iteration = -1;
+            //on parcourt les blocks et les swap
             for (Block block : blocksList) {
                 //la liste des Swap pour le Block
                 List<Swap> swapList = neighbors(block);
                 for (Swap swap : swapList) {
-                    //avant de tester le swap, on vérifie qu'il est autorisé
-                    if (k > ListeTaboo[swap.t1][swap.t2]) {
+                    //avant de tester le swap, on vérifie que la solution n'est pas dans l'essemble tabou (déjà visité)
+                    if (i > List_Taboo[swap.t1][swap.t2]) {
                         //on copie l'ordre de s et on applique le swap
-                        ResourceOrder copy = order_local.copy();
+                        ResourceOrder copy = order_iteration.copy();
                         swap.applyOn(copy);
                         int makespan = copy.toSchedule().makespan();
-                        //si le swap retourne un meilleur résultat que le résultat local on actualise s_local
-                        if (best_local == -1 || makespan < best_local) {
+                        //si le swap retourne un meilleur résultat que le résultat local on actualise s_itération
+                        if (best_iteration == -1 || makespan < best_iteration) {
                             bestSwap = swap;
-                            best_local = makespan;
-                            order_local = copy;
+                            best_iteration = makespan;
+                            order_iteration = copy;
                             //si le swap est également meilleur que s, on actulise s
                             if (makespan < best) {
                                 best = makespan;
@@ -127,18 +129,18 @@ public class Tabou implements Solver {
             }
             //si un swap est meilleur que la solution locale on l'ajoute à la structure
             if (bestSwap != null) {
-                ListeTaboo[bestSwap.t1][bestSwap.t2] = k + dureeTabou;
+                List_Taboo[bestSwap.t1][bestSwap.t2] = i + dureeTabou;
             }
-            //on actualise s et s_local
-            s_local = new Result(order_local.instance, order_local.toSchedule(), Result.ExitCause.Blocked);
+            //on actualise s et s_iteration
+            s_iteration = new Result(order_iteration.instance, order_iteration.toSchedule(), Result.ExitCause.Blocked);
             s = new Result(order.instance, order.toSchedule(), Result.ExitCause.Blocked);
         }
         //en fonction de si maxIter a été atteint ou si la deadline a été atteinte
         //on ne retourne pas la même raison de sortie
-        if (k == maxIter) return s;
+        if (i == maxIter) return s;
         return new Result(s.instance, s.schedule, Result.ExitCause.Timeout);
     }
-    }
+
 
     /** Returns a list of all blocks of the critical path. */
     List<Block> blocksOfCriticalPath(ResourceOrder order) {
